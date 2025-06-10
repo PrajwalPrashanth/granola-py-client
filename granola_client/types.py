@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 
-from pydantic import BaseModel, Field, HttpUrl, ConfigDict
+from pydantic import BaseModel, Field, HttpUrl, ConfigDict, field_validator
 
 # Client Options
 class HttpOpts(BaseModel):
@@ -111,9 +111,21 @@ class TranscriptSegment(BaseModel):
     start_timestamp: str = Field(..., alias="startTimestamp")
     end_timestamp: str = Field(..., alias="endTimestamp")
     text: str
+    source: str
 
     model_config = ConfigDict(populate_by_name=True)
 
+    @field_validator('source')
+    @classmethod
+    def transform_source(cls, v: str) -> str:
+        """Transform source values: microphone -> Me, system -> Them"""
+        if v == "microphone":
+            return "Me"
+        elif v == "system":
+            return "Them"
+        return v
+    
+    
 
 class PanelTemplate(BaseModel):
     id: str
